@@ -84,6 +84,11 @@ public class CarController : MonoBehaviour
         brain.RandomizeWeights();
     }
 
+    public void SetBrain(float[,] newWeights)
+    {
+        brain.Weights = newWeights;
+    }
+
     public float[,] GetWeights()
     {
         return brain.Weights;
