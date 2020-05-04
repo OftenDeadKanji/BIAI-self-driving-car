@@ -26,7 +26,7 @@ public class ManagerController : MonoBehaviour
         if (car.IsAlive)
         {
             car.UpdateCar();
-            Debug.Log("Car uptaded.");
+            //Debug.Log("Car uptaded.");
         }
         else
         {
@@ -39,6 +39,17 @@ public class ManagerController : MonoBehaviour
                     currentGeneration[currentCarNumber, 1, i] = weights[1, i];
                 }
                 currentGenerationsScore[currentCarNumber] = car.Score;
+
+                car.ResetCar();
+                if(generationNumber == 1)
+                {
+                car.RandomizeBrain();
+                }
+                else
+                {
+                    //TODO - ustawienie mózgu
+                }
+                Debug.Log("Car reseted.");
             }
             else
             {

@@ -32,7 +32,6 @@ public class CarController : MonoBehaviour
     {
         render = GetComponent<SpriteRenderer>();
         ResetCar();
-        brain.RandomizeWeights();
     }
 
     // Update is called once per frame
@@ -72,11 +71,17 @@ public class CarController : MonoBehaviour
 
     public void ResetCar()
     {
-        transform.position.Set(0, 0, 0);
+        transform.position = new Vector3(0, 0, 0);
         transform.rotation = Quaternion.identity;
         isAlive = true;
         spd = acc = score = 0;
+
         brain = new NeuralNetwork();
+    }
+
+    public void RandomizeBrain()
+    {
+        brain.RandomizeWeights();
     }
 
     public float[,] GetWeights()
