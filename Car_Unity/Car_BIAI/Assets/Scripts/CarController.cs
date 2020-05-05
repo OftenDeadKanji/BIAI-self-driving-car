@@ -18,6 +18,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxSpdFwd = 5f;
     [SerializeField] private float maxSpdBck = -2f;
     [SerializeField] private float score = 0.0f;
+    [SerializeField] private float maxNoSpdTime = 2.0f;
+    [SerializeField] private float currentTimeWithNoSpd = 0.0f;
     public float Score { get => score; }
 
     private bool isAlive;
@@ -37,11 +39,21 @@ public class CarController : MonoBehaviour
     // Update is called once per frame
     public void UpdateCar()
     {
-        transform.localPosition += spd * transform.up * Time.deltaTime;
         if (isAlive)
         {
+            transform.localPosition += spd * transform.up * Time.deltaTime;
             spd += Time.deltaTime * acc;
-            score = spd * (1 + Time.deltaTime) / 100.0f;
+            score = spd * (1 + Time.deltaTime);
+
+            if (Mathf.Abs(spd) < 0.1)
+                currentTimeWithNoSpd += Time.deltaTime;
+            else
+                currentTimeWithNoSpd = 0.0f;
+            if (currentTimeWithNoSpd >= maxNoSpdTime)
+            {
+                isAlive = false;
+                return;
+            }
 
             if (spd > maxSpdFwd)
                 spd = maxSpdFwd;
@@ -64,8 +76,8 @@ public class CarController : MonoBehaviour
             float[] result = brain.Outputs;
 
             //ustawienie wartości
-            acc = result[0];
-            wheels = result[1];
+            acc = 2 * result[0] - 1;
+            wheels = 2 * result[1] - 1;
         }
     }
 
@@ -75,7 +87,7 @@ public class CarController : MonoBehaviour
         transform.rotation = Quaternion.identity;
         isAlive = true;
         spd = acc = score = 0;
-
+        currentTimeWithNoSpd = 0;
         brain = new NeuralNetwork();
     }
 
@@ -141,13 +153,19 @@ public class CarController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        render.color = Color.red;
-        isAlive = false;
+        if (col.CompareTag("Wall"))
+        {
+            render.color = Color.red;
+            isAlive = false;
+        }
     }
 
     void OnTriggerExit2D(Collider2D col)
     {
-        render.color = Color.white;
+        if (col.CompareTag("Wall"))
+        {
+            render.color = Color.white;
+        }
     }
 
     void OnDrawGizmosSelected()
@@ -207,7 +225,7 @@ class NeuralNetwork
             Outputs[0] += inputs[i] * Weights[0, i];
             Outputs[1] += inputs[i] * Weights[1, i];
         }
-        //TODO? dodać bias
+        //TODO? add bias?
 
         Outputs[0] = Sigmoid(Outputs[0]);
         Outputs[1] = Sigmoid(Outputs[1]);
