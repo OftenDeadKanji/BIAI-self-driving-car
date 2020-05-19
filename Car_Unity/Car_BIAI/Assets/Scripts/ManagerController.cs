@@ -25,7 +25,7 @@ public class ManagerController : MonoBehaviour
         {
             cars[i] = Instantiate(carPrefab, carPrefab.transform.parent);
             cars[i].GetComponent<CarController>().StartCar();
-            cars[i].GetComponent<CarController>().RandomizeBrain();
+            //cars[i].GetComponent<CarController>().RandomizeBrain();
         }
 
         generationNumberText.text = "1";
@@ -54,30 +54,62 @@ public class ManagerController : MonoBehaviour
         //if not then collect data
         else
         {
+            MakeNextGeneration();
             for (int i = 0; i < maxPopulationCount; i++)
             {
                 CarController car = cars[i].GetComponent<CarController>();
-
-                float[,] weights = car.GetWeights();
-                for (int j = 0; j < 6; j++)
-                {
-                    //save first output weights
-                    currentGeneration[i, 0, j] = weights[0, j];
-                    //save second output weights
-                    currentGeneration[i, 1, j] = weights[1, j];
-                }
-                currentGenerationsScore[i] = car.Score;
-
                 car.ResetCar();
             }
-            MakeNextGeneration();
         }
     }
 
     private void MakeNextGeneration()
     {
-        //TODO mutation and other things
+        //TODO mutation and other things - no mutation for the moment
+        NeuralNet[] brains = new NeuralNet[maxPopulationCount];
+        float best = -5f;
+        float sndBest = -10f;
+        CarController bestCar = null;
+        CarController sndBestCar = null;
+        foreach (GameObject car in cars)
+        {
+            CarController tempCar = car.GetComponent<CarController>();
+            if (tempCar.Score > best)
+            {
+                best = tempCar.Score;
+                bestCar = car.GetComponent<CarController>();
+            }
+            else if (tempCar.Score > sndBest)
+            {
+                sndBest = tempCar.Score;
+                sndBestCar = car.GetComponent<CarController>();
+            }
+        }
 
+        NeuralNet parentOne = bestCar.getNet();
+        NeuralNet parentTwo = sndBestCar.getNet();
+
+        brains[0] = parentOne;
+        brains[1] = parentTwo;
+        NeuralNet[] pureChildren = parentOne.cross(parentTwo);
+        brains[2] = pureChildren[0];
+        brains[3] = pureChildren[1];
+
+        for (int i = 4; i < maxPopulationCount - (maxPopulationCount * 0.1); i += 2)
+        {
+            NeuralNet[] children = parentOne.crossMutate(parentTwo);
+            brains[i] = children[0];
+            brains[i + 1] = children[1];
+        }
+        for (int i = (int)(maxPopulationCount - (maxPopulationCount * 0.1)); i < maxPopulationCount; i++)
+        {
+            brains[i] = new NeuralNet();
+        }
+        for (int i = 0; i < maxPopulationCount; i++)
+        {
+            CarController car = cars[i].GetComponent<CarController>();
+            car.setNet(brains[i]);
+        }
         //increment generation number and change UI Text
         generationNumberText.text = (++generationNumber).ToString();
     }

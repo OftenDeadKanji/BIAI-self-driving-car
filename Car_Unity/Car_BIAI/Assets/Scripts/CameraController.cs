@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
     private Transform carTransform;
     [SerializeField] private Vector3 cameraOffset;
     [SerializeField] private ManagerController SimulationManager;
+    [SerializeField] private Text scoreTxt;
 
     private void Start()
     {
@@ -16,12 +18,16 @@ public class CameraController : MonoBehaviour
     {
         //getting car with the highest score
         float maxScore = -10.0f;
-        foreach (GameObject car in SimulationManager.Cars)
+        if (SimulationManager.Cars != null)
         {
-            if (car.GetComponent<CarController>().Score > maxScore)
+            foreach (GameObject car in SimulationManager.Cars)
             {
-                maxScore = car.GetComponent<CarController>().Score;
-                carTransform = car.transform;
+                if (car.GetComponent<CarController>().Score > maxScore)
+                {
+                    maxScore = car.GetComponent<CarController>().Score;
+                    carTransform = car.transform;
+                    scoreTxt.text = "" + maxScore;
+                }
             }
         }
         //setting camera position
