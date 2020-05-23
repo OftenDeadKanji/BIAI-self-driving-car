@@ -91,7 +91,6 @@ public class CarController : MonoBehaviour
 
             //uzyskanie wyników z outputów
             float[] result = net.getOutputs();
-            //Debug.Log(result[0] + " : " + result[1]);
 
             //ustawienie wartości
             acc = 2 * result[0] - 1;
@@ -106,7 +105,7 @@ public class CarController : MonoBehaviour
         transform.position = new Vector3(0, 0, 0);
         transform.rotation = Quaternion.identity;
         isAlive = true;
-        spd = acc = score = 0;
+        spd = acc = score = waypointIter = 0;
         currentTimeWithNoSpd = 0;
         //brain = new NeuralNetwork();
     }
