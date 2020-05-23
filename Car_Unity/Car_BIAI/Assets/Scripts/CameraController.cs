@@ -22,7 +22,8 @@ public class CameraController : MonoBehaviour
         {
             foreach (GameObject car in SimulationManager.Cars)
             {
-                if (car.GetComponent<CarController>().Score > maxScore)
+                
+                if (car.GetComponent<CarController>().IsAlive && car.GetComponent<CarController>().Score > maxScore)
                 {
                     maxScore = car.GetComponent<CarController>().Score;
                     carTransform = car.transform;
@@ -32,5 +33,7 @@ public class CameraController : MonoBehaviour
         }
         //setting camera position
         transform.position = carTransform.position + cameraOffset;
+        
     }
+
 }

@@ -18,13 +18,18 @@ public class CarController : MonoBehaviour
     [SerializeField] private float maxSpdFwd = 5f;
     [SerializeField] private float maxSpdBck = -2f;
     [SerializeField] private float score = 0.0f;
-    [SerializeField] private float maxNoSpdTime = 2.0f;
-    [SerializeField] private float currentTimeWithNoSpd = 0.0f;
+    [SerializeField] private float passedTime = 0.0f;
+    [SerializeField] private float maxPassedTimeForStupid = 5.0f;
+    [SerializeField] private float prevScore = 0.0f;
     public float Score { get => score; }
 
     [Header("Fitness")]
     [SerializeField] private Transform[] waypoints;
     [SerializeField] private int waypointIter = 0;
+    [SerializeField] private int waypointCount = 22;
+
+
+    
 
     private bool isAlive;
     public bool IsAlive { get => isAlive; }
@@ -44,8 +49,8 @@ public class CarController : MonoBehaviour
         net = new NeuralNet();
 
         //setting waypionts for fitness
-        waypoints = new Transform[7];
-        for (int i = 0; i < 7; i++)
+        waypoints = new Transform[waypointCount];
+        for (int i = 0; i < waypointCount; i++)
         {
             Transform waypoint = GameObject.Find("Waypoint (" + (i + 1) + ")").transform;
             waypoints[i] = waypoint;
@@ -63,14 +68,20 @@ public class CarController : MonoBehaviour
             float waypointDist = (waypoints[waypointIter].position - transform.position).magnitude;
             score = (waypointIter + 1) * 1000 - (waypointDist * 100);
 
-            if (Mathf.Abs(spd) < 0.1)
-                currentTimeWithNoSpd += Time.deltaTime;
-            else
-                currentTimeWithNoSpd = 0.0f;
-            if (currentTimeWithNoSpd >= maxNoSpdTime)
+            passedTime += Time.deltaTime;
+
+            if (passedTime >= maxPassedTimeForStupid)
             {
-                isAlive = false;
-                return;
+                if (score - prevScore < 50)
+                {
+                    isAlive = false;
+                    return;
+                }
+                else
+                {
+                    passedTime = 0.0f;
+                    prevScore = score;
+                }
             }
 
             if (spd > maxSpdFwd)
@@ -105,8 +116,8 @@ public class CarController : MonoBehaviour
         transform.position = new Vector3(0, 0, 0);
         transform.rotation = Quaternion.identity;
         isAlive = true;
-        spd = acc = score = waypointIter = 0;
-        currentTimeWithNoSpd = 0;
+        spd = acc = score = prevScore= waypointIter = 0;
+        passedTime = .0f;
         //brain = new NeuralNetwork();
     }
 
