@@ -15,12 +15,11 @@ public class CarController : MonoBehaviour
 
     [Header("Other")]
     [SerializeField] private float spd = 0f;
-    [SerializeField] private float maxSpdFwd = 5f;
-    [SerializeField] private float maxSpdBck = -2f;
-    [SerializeField] private float score = 0.0f;
     [SerializeField] private float passedTime = 0.0f;
-    [SerializeField] private float maxPassedTimeForStupid = 5.0f;
+    [SerializeField] private float maxPassedTimeForStupid = 30.0f;
+    [SerializeField] private int checkStupid = 1;
     [SerializeField] private float prevScore = 0.0f;
+    [SerializeField] private float score = 0.0f;
     public float Score { get => score; }
 
     [Header("Fitness")]
@@ -29,8 +28,8 @@ public class CarController : MonoBehaviour
     [SerializeField] private int waypointCount = 22;
 
 
-    
-
+    private float maxSpdFwd = 5f;
+    private float maxSpdBck = -2f;
     private bool isAlive;
     public bool IsAlive { get => isAlive; }
 
@@ -69,20 +68,18 @@ public class CarController : MonoBehaviour
             score = (waypointIter + 1) * 1000 - (waypointDist * 100);
 
             passedTime += Time.deltaTime;
-
             if (passedTime >= maxPassedTimeForStupid)
             {
-                if (score - prevScore < 50)
+                if (score < prevScore)
                 {
                     isAlive = false;
+                    render.color = Color.red;
                     return;
                 }
-                else
-                {
-                    passedTime = 0.0f;
-                    prevScore = score;
-                }
+                passedTime = 0;
+                prevScore = score;
             }
+
 
             if (spd > maxSpdFwd)
                 spd = maxSpdFwd;
@@ -115,8 +112,9 @@ public class CarController : MonoBehaviour
     {
         transform.position = new Vector3(0, 0, 0);
         transform.rotation = Quaternion.identity;
+        checkStupid = 1;
         isAlive = true;
-        spd = acc = score = prevScore= waypointIter = 0;
+        spd = acc = score = prevScore = waypointIter = 0;
         passedTime = .0f;
         //brain = new NeuralNetwork();
     }
@@ -203,7 +201,7 @@ public class CarController : MonoBehaviour
             render.color = Color.red;
             isAlive = false;
         }
-        else if ( col.CompareTag("Waypoint"))
+        else if (col.CompareTag("Waypoint"))
         {
             if (waypointIter < waypoints.Length - 1) waypointIter++;
             else Debug.Log("FIN");
@@ -306,9 +304,9 @@ public class NeuralNet
         {
             neurons[i] = new float[neurInLay[i - 1]];
         }
-        for(int i = 0; i < neurons.Length - 1; i++)
+        for (int i = 0; i < neurons.Length - 1; i++)
         {
-            weights[i] = new float [neurons[i + 1].Length][];
+            weights[i] = new float[neurons[i + 1].Length][];
             for (int j = 0; j < weights[i].Length; j++)
             {
                 weights[i][j] = new float[neurons[i].Length];
@@ -536,10 +534,10 @@ public class Genome
 
     public void mutate(int noMutation)
     {
-        for (int i = 0; i< noMutation; i++)
+        for (int i = 0; i < noMutation; i++)
         {
             int mutaPoint = Random.Range(0, genes.Length - 1);
-            if(Random.Range(0.0f, 1.0f) > 0.5f)
+            if (Random.Range(0.0f, 1.0f) > 0.5f)
             {
                 genes[mutaPoint] *= -1;
             }
@@ -555,7 +553,7 @@ public class Genome
     public string getStr()
     {
         string ret = "";
-        for(int i =0; i< genes.Length; i++)
+        for (int i = 0; i < genes.Length; i++)
         {
             ret += genes[i] + "\n";
         }

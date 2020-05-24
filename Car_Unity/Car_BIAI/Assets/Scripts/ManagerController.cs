@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
+using System.IO;
 
 public class ManagerController : MonoBehaviour
 {
@@ -15,6 +17,9 @@ public class ManagerController : MonoBehaviour
     private GameObject[] cars;
     public GameObject[] Cars { get => cars; }
 
+    //do danych statystycznych
+    private const string FILE_NAME = "D:\\Users\\Kanjiklub\\Documents\\GitHub\\BIAI-self-driving-car\\Car_Unity\\Car_BIAI\\Excel\\data.xls";
+
     void Start()
     {
         currentGeneration = new float[maxPopulationCount, 2, 7];
@@ -29,6 +34,7 @@ public class ManagerController : MonoBehaviour
         }
 
         generationNumberText.text = "1";
+        System.IO.File.WriteAllText(FILE_NAME, "GENERATION\tMAX SCORE\tAVG SCORE\n");
     }
 
     void Update()
@@ -65,6 +71,24 @@ public class ManagerController : MonoBehaviour
 
     private void MakeNextGeneration()
     {
+        float maxScore = 0.0f, avgScore = 0.0f;
+        foreach(GameObject car in cars)
+        {
+            float score = car.GetComponent<CarController>().Score;
+            if(maxScore < score)
+            {
+                maxScore = score;
+            }
+            avgScore += score;
+        }
+        avgScore /= cars.Length;
+
+        using (StreamWriter file = new StreamWriter(FILE_NAME, true))
+        {
+            file.WriteLine(generationNumber.ToString() + "\t" + maxScore.ToString() + "\t" + avgScore.ToString());
+        }
+
+
         //TODO mutation and other things - no mutation for the moment
         NeuralNet[] brains = new NeuralNet[maxPopulationCount];
         float best = -5f;
@@ -112,5 +136,10 @@ public class ManagerController : MonoBehaviour
         }
         //increment generation number and change UI Text
         generationNumberText.text = (++generationNumber).ToString();
+    }
+
+    private void OnDestroy()
+    {
+        
     }
 }
