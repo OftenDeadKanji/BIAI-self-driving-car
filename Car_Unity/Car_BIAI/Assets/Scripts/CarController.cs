@@ -16,7 +16,7 @@ public class CarController : MonoBehaviour
     [Header("Other")]
     [SerializeField] private float spd = 0f;
     [SerializeField] private float passedTime = 0.0f;
-    [SerializeField] private float maxPassedTimeForStupid = 30.0f;
+    [SerializeField] private float maxPassedTimeForStupid = 10.0f;
     [SerializeField] private int checkStupid = 1;
     [SerializeField] private float prevScore = 0.0f;
     [SerializeField] private float score = 0.0f;
@@ -70,7 +70,7 @@ public class CarController : MonoBehaviour
             passedTime += Time.deltaTime;
             if (passedTime >= maxPassedTimeForStupid)
             {
-                if (score < prevScore)
+                if (score - prevScore < 500)
                 {
                     isAlive = false;
                     render.color = Color.red;
@@ -116,6 +116,7 @@ public class CarController : MonoBehaviour
         isAlive = true;
         spd = acc = score = prevScore = waypointIter = 0;
         passedTime = .0f;
+        render.color = Color.white;
         //brain = new NeuralNetwork();
     }
 
